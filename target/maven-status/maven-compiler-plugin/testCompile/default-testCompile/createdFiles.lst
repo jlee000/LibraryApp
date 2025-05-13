@@ -1,0 +1,10 @@
+com\controllerTests\BookControllerTest.class
+com\repoTests\BookRepoTest.class
+com\serviceTests\UserServiceTest.class
+com\repoTests\UserRepoTest.class
+com\integrationTests\BookIntegrationTest.class
+com\modelTests\BookTest.class
+com\integrationTests\UserIntegrationTest.class
+com\serviceTests\BookServiceTest.class
+com\controllerTests\UserControllerTest.class
+com\modelTests\UsersTest.class

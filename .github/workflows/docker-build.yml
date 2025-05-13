@@ -1,0 +1,67 @@
+name: Build and Deploy Spring Application in Docker with PostgreSQL
+
+on:
+  push:
+    branches:
+      - main  # Trigger the workflow on push to the main branch
+  pull_request:
+    branches:
+      - main  # Trigger the workflow for pull requests targeting the main branch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest  # The environment to run the job in
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v2 # Install Docker (in case it's missing or out of date)
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Set up Docker Compose
+        run: |
+          sudo curl -L "https://github.com/docker/compose/releases/download/v2.17.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
+          docker-compose --version  # Verify Docker Compose installation
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }} # Docker login
+
+      - name: Build Docker image with docker-compose
+        run: |
+          docker-compose -f docker-compose.yml up --build -d  # Builds and starts the containers in the background
+          docker-compose ps  # Shows the status of all containers
+          docker-compose logs libraryapp # Captures logs from specific container
+
+      - name: Wait for PostgreSQL container to be healthy
+        run: |
+          until [ "$(docker inspect --format '{{.State.Health.Status}}' $(docker ps -q --filter "name=postgres"))" == "healthy" ]; do
+            echo "Waiting for PostgreSQL to be healthy..."
+            sleep 5
+          done
+          echo "PostgreSQL is healthy."
+
+      - name: Wait for Spring Boot to be start
+        run: |
+          until curl -s http://localhost:8080/; do
+            echo "Waiting for Spring Boot app to start..."
+            sleep 5
+            docker logs libraryapp-libraryapp-1
+
+          done
+          echo "Spring Boot app is running!"
+
+      - name: Test the Spring App
+        run: |
+          curl -s http://localhost:8080/home || exit 1  # Tests if the Spring app is running
+
+      - name: Clean up Docker containers
+        run: |
+          docker-compose down  # Shuts down the containers after the test
