@@ -11,25 +11,34 @@
 ![Tests](https://img.shields.io/badge/Tests-Passing-brightgreen?style=flat&logo=testing-library)
 ![Status](https://img.shields.io/badge/Project-Complete-brightgreen)
 
-A full-stack **Library Management System** designed to demonstrate backend Java Spring Boot skills and React frontend proficiency. It supports book loaning, book & user management, and RESTful operations, built with a microservice-ready, Dockerized environment.
+A full-stack **Library Management System** designed to demonstrate backend Java Spring Boot skills and React frontend proficiency with TypeScript. It supports book loaning, book & user management, and RESTful operations, built with a microservice-ready, Dockerized environment. **Spring Security** is implemented with custom filters, role-based authentication, and JWT to ensure secure user interactions.
 
 ---
 
 ## 🚀 Features
 
 ### 🧠 Backend
-- **Spring Boot**, **JPA**, **Hibernate**, **PostgreSQL** (Docker) and **H2** (local dev)
-- RESTful APIs for **Books**, **Authors**, **Users**, **Loans**, **Cart**, **Images**
-- Role-based users, default users created at startup 
-- Dockerfile, `docker-compose.yml`, and GitHub Actions integrated
-- Extensive unit and integration testing across multiple layers (repository, service, controller)
+- **Spring Boot**, **JPA**, **Hibernate**, **PostgreSQL** (Dockerized) and **H2** (local dev)
+- **Spring Security**: 
+  - **Custom Filter Chain**: Allows detailed control over request filtering and security validation.
+  - **Custom User Authentication**: Includes custom login and password decryption logic for secure login.
+  - **Database User Login**: Authentication of users via database-backed credentials.  
+  - **JWT-based Authentication**: After successful login, users receive a JWT token that they include in future requests to authenticate API calls, stateless user authentication, ensuring secure access for client-side requests.
+  - **Role-based Authorization**: Different user roles (e.g., MEMBER, STAFF) grant different levels of access to the system.
+- RESTful APIs for **Books**, **Authors**, **Users**, **BookLoans**, **Cart**, **CartItem**, **Images**, **Homepage**
+- Role-based users with defined access control (Admin, User) and default users created at startup 
+- Dockerfile, `docker-compose.yml`, and GitHub Actions integrated for automated CI/CD pipeline.
+- Extensive unit and integration testing across all layers (repository, service, controller).
 
 ### 🎨 Frontend
 - **React + TypeScript**
-- User management UI: create, update, delete, and view users
-- Navigation between homepage, books page, and user management page
-- Axios-based communication with backend APIs
-- Global CORS setup using @Configuration to allow cross-origin requests from the React frontend
+- **JWT Integration**: Tokens are sent along with every request for secure user authentication in frontend-to-backend communication. 
+- **User Management UI**: Allows creation, updating, deletion, and viewing of users based on role-based access control.
+- **Book Access**: Users can view and loan books in the system. Admins have additional permissions for book management; adding, editing and deleting.
+- **Cart Management**: Users can add books to their cart for loan, and return books to the library.
+- **User Roles**: The app uses role-based management for **Internal Users**, ensuring they have access to the appropriate features such as managing users and books.
+- **Navigation**: Users can navigate between the homepage, books, account page, cart, book loans, internal user management and internal book management. Users must login to use most features.
+- Global CORS setup using `@Configuration` to allow cross-origin requests from the React frontend.
 
 ---
 
@@ -53,6 +62,13 @@ docker-compose up --build
 ### 🔁 GitHub Actions
 
 Continuous Integration is set up using docker-build.yml. This file builds the backend Docker image, runs tests, and validates the build on every push to the repository.
+
+---
+
+## 🎯 Future Enhancements
+- Expand JWT refresh token mechanism for long-term sessions.
+- Introduce **OAuth2** for third-party authentication (Google, Facebook).
+- Add **Payment Integration** for handling book loan transactions.
 
 ---
 

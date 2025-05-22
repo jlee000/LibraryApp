@@ -1,8 +1,8 @@
-//import * as React from 'react';
 import React,{ useRef, useEffect } from 'react';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import List from '@mui/material/List';
+import { Button } from '@mui/material';
 import ListItem from '@mui/material/ListItem';
 import DeleteIcon from '@mui/icons-material/Delete';
 import IconButton from '@mui/material/IconButton';
@@ -19,7 +19,7 @@ interface User {
 	lastname: string;
     email: string;
 	role: string;
-	enabled: boolean;
+	active: boolean;
 }   
 
 interface ApiResponse {
@@ -56,18 +56,27 @@ const Users = ()=> {
     const [users, setUsers] = React.useState<User[]>([]);
 	
 	const printUserBeforeAndAfter = async (ub:User, u:User) => {
-        console.log("User before: ", "Id: ",ub.id, ", Username: ",ub.username, ", Firstname: ",ub.firstname, ", Lastname: ",ub.lastname, ", Email: ",ub.email, ", Role: ",ub.role, ", Enabled: ",ub.enabled,	 "\n\nUser after: ", "Id: ",u.id, ", Username: ",u.username, ", Firstname: ",u.firstname, ", Lastname: ",u.lastname, ", Email: ",u.email, ", Role: ",u.role, ", Enabled: ",u.enabled);
+        console.log("User before: ", "Id: ",ub.id, ", Username: ",ub.username, ", Firstname: ",ub.firstname, ", Lastname: ",ub.lastname, ", Email: ",ub.email, ", Role: ",ub.role, ", Active: ",ub.active,	 "\n\nUser after: ", "Id: ",u.id, ", Username: ",u.username, ", Firstname: ",u.firstname, ", Lastname: ",u.lastname, ", Email: ",u.email, ", Role: ",u.role, ", Active: ",u.active);
     };
 
     const addUser = async (u: User) => {
-        await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(u) })
+        await fetch(url, { method: "POST", 
+						headers: { 
+							"Content-Type": "application/json", 
+							Authorization: `Bearer ${ localStorage.getItem('jwt') }`  
+						},
+						body: JSON.stringify(u) })
         .then(() => { console.log("New user added: " + u.username); });
+		reloadPage();
     };
 
 	const deleteUser = async (u: User) => {
 		await fetch(`${urll}${u.id}`, {
 			method: "DELETE",
-			headers: {"Content-Type": "application/json",},})
+			headers: {
+				"Content-Type": "application/json", 
+				Authorization: `Bearer ${ localStorage.getItem('jwt') }`
+					},})
 		.then(() => {
 			console.log("User Id deleted: " + u.id);
 			reloadPage();
@@ -78,21 +87,31 @@ const Users = ()=> {
 
     const updateUser = async (u: User) => {
         let oldUserInfo = users.filter(x => x.id === u.id);
-        await fetch(url, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(u) })
+        await fetch(url, { method: "PUT", 
+						headers: { 
+							"Content-Type": "application/json", 
+							Authorization: `Bearer ${ localStorage.getItem('jwt') }` 
+						}, 
+						body: JSON.stringify(u) })
            .then(() => { printUserBeforeAndAfter(oldUserInfo[0], u); });
 		   reloadPage();
     };
 	
 	const updateUserStatus = async (u: User) => {
         let oldUserInfo = users.filter(x => x.id === u.id);
-        await fetch(url, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(u) })
+        await fetch(url, { method: "PUT", 
+						headers: { 
+							"Content-Type": "application/json", 
+							Authorization: `Bearer ${ localStorage.getItem('jwt') }`  
+						}, 
+						body: JSON.stringify(u) })
            .then(() => { printUserBeforeAndAfter(oldUserInfo[0], u); });
 		   reloadPage();
     };
 
     const reloadPage = async () => {
 	if (divRef.current) {
-        const response = await fetch(url, { method: "GET" });
+        const response = await fetch(url, { method: "GET", credentials: 'include' });
 		const jsonResponse: ApiResponse = await response.json();
 		const u: User[] = jsonResponse.data;
         setUsers(u);
@@ -100,7 +119,7 @@ const Users = ()=> {
     };
 
     useEffect(() => {
-         if (divRef.current) {	reloadPage(); }
+        if (divRef.current) { reloadPage(); }
     }, []);
 
     return (
@@ -108,8 +127,31 @@ const Users = ()=> {
             component="form"
             noValidate
             autoComplete="off"
-        >
+        >	
 		<h1>Internal User Management</h1>
+            <h2><u>All Users</u></h2>
+            <List>
+                {users && users.map(user => (
+                    <ListItem key={user.id}>
+					    <IconButton
+                            edge="end"
+                            aria-label="delete"
+                            onClick={() => { deleteUser(user); }}
+                        >
+                        <DeleteIcon />
+                        </IconButton>
+						
+                        Id: {user.id} <br />
+						Username: {user.username} <br />
+                        FirstName: {user.firstname} <br />
+						LastName: {user.lastname} <br />
+                        Email: {user.email} <br />
+						Role: {user.role} <br />
+						Active: {user.active ? "True" : "False"} <br />
+                    </ListItem>
+                ))}
+            </List>
+			
             <h2><u>Add User</u></h2>
             <br /><br />
             <div>
@@ -152,33 +194,10 @@ const Users = ()=> {
                     value={role}
                     onChange={(e) => setRole(e.target.value.toUpperCase() as Role)}
                 />
-                <br /><button onClick={() => { addUser( { username, password, firstname, lastname, email, role, enabled:true } ); }}>Add User</button>
+                <br /><Button variant="contained" color="primary" onClick={() => { addUser( { username, password, firstname, lastname, email, role, active:true } ); }}>Add User</Button>
             </div>
 
             <br /><br /><br /><br /><br />
-
-            <h2><u>Delete Users</u></h2>
-            <List>
-                {users && users.map(user => (
-                    <ListItem key={user.id}>
-					    <IconButton
-                            edge="end"
-                            aria-label="delete"
-                            onClick={() => { deleteUser(user); }}
-                        >
-                        <DeleteIcon />
-                        </IconButton>
-						
-                        Id: {user.id} <br />
-						Username: {user.username} <br />
-                        FirstName: {user.firstname} <br />
-						LastName: {user.lastname} <br />
-                        Email: {user.email} <br />
-						Role: {user.role} <br />
-						Enabled: {user.enabled ? "True" : "False"} <br />
-                    </ListItem>
-                ))}
-            </List>
 
             <h2><u>Modify User</u></h2>
             {users && users.map(user => (
@@ -223,7 +242,7 @@ const Users = ()=> {
                         edge="end"
                         aria-label="update"
                         onClick={() => {
-                            updateUser({ id:user.id, username:newUsername, password:user.password, firstname:newFirstName, lastname:newLastName, email:newEmail, role:newRole, enabled:user.enabled });
+                            updateUser({ id:user.id, username:newUsername, password:user.password, firstname:newFirstName, lastname:newLastName, email:newEmail, role:newRole, active:user.active });
                         }}
                     >
                         Update							
@@ -235,13 +254,13 @@ const Users = ()=> {
 							<FormControlLabel
 							  control={
 								<Switch 
-									checked={user.enabled} 
+									checked={user.active} 
 									onChange={(event) => {
-									updateUserStatus({ id:user.id, username:user.username, password:user.password, firstname:user.firstname, lastname:user.lastname, email:user.email, role:user.role, enabled:event.target.checked });
+									updateUserStatus({ id:user.id, username:user.username, password:user.password, firstname:user.firstname, lastname:user.lastname, email:user.email, role:user.role, active:event.target.checked });
 									}}
 								/>
 							  }
-							  label="Enabled?"
+							  label="Active?"
 							/>
 						  </FormGroup>
 						  </FormControl>

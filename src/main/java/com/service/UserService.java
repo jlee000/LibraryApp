@@ -3,8 +3,12 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
+import com.configSecurity.JWTService;
 import com.exception.AlreadyExistsException;
 import com.exception.ResourceNotFoundException;
 import com.model.Users;
@@ -18,8 +22,24 @@ public class UserService {
 	@Autowired
 	private final UserRepo repo;
 
-	public UserService(UserRepo repo) {
+	@Autowired
+	private JWTService jwtService;
+
+	@Autowired
+	private final AuthenticationManager authMgr;
+
+	public UserService(UserRepo repo, AuthenticationManager authMgr) {
 		this.repo = repo;
+		this.authMgr = authMgr;
+	}
+
+	public String verifyUser(String username, String password){
+		Authentication auth = authMgr.authenticate(new UsernamePasswordAuthenticationToken(username, password));
+		if(auth.isAuthenticated()) {
+			return jwtService.generateToken(username);
+		}else{
+			throw new ResourceNotFoundException("User not found");
+		}
 	}
 	
 	public List<Users> getUsers(){

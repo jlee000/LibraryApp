@@ -2,7 +2,6 @@ package com.service;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,7 +9,6 @@ import org.springframework.stereotype.Service;
 
 import com.model.Book;
 import com.model.Cart;
-import com.model.Cartitem;
 import com.model.Users;
 import com.repository.CartItemRepo;
 import com.repository.CartRepo;
@@ -48,6 +46,14 @@ public class CartService {
 		}
 		return cartRepo.save(cart);
 	}
+
+	public Cart getCartByUsername(String username) {
+		Cart cart = cartRepo.findByUsername(username);
+		if(cart == null) {
+			cart = initNewCart(userService.getUserByUsername(username));
+		}
+		return cartRepo.save(cart);
+	}
 	
 	@Transactional
 	public void clearCart(Long id) {
@@ -64,11 +70,5 @@ public class CartService {
 	
 	public Cart initNewCart(Users user) {		
 		return new Cart(cartIdGenerator.incrementAndGet(), user, new ArrayList<>(Arrays.asList()));				
-	}
-
-	public List<Cartitem> removeCartItemImages(List<Cartitem> items){
-		items.forEach(item-> item.getBook().getImages()
-				.forEach(image-> image.setImage(null)));
-		return items;
 	}
 }

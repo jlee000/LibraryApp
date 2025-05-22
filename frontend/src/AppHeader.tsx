@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
@@ -13,43 +13,119 @@ import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
 import AdbIcon from '@mui/icons-material/Adb';
 import { useNavigate } from 'react-router-dom';
+import Cookies from 'js-cookie';
 
-const pages = ['Home', 'Books', 'Internal User Management'];
-const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
+interface User {
+	id?: number
+	username: string,
+	password: string,
+    firstname: string;
+	lastname: string;
+    email: string;
+	role: string;
+	active: boolean;
+}   
+
+interface ApiResponse {
+	data: any;
+	message: string;
+} 
+
+enum Role {
+  STAFF="STAFF", 
+  MEMBER="MEMBER"
+} 
+
+const pages = ['Home', 'Books', 'Internal User Management', 'Internal Book Management'];
+const settings = ['Log in', 'Account', 'My Books', 'Logout'];
 const pageRoutes: { [key: string]: string } = {
       Home: '/',
       Books: '/books',
       'Internal User Management': '/users',
-    };
+	  'Internal Book Management': '/booksinternal'
+};
+const userRoutes: { [key: string]: string } = {
+      'Log in': '/login',
+      Account: '/account',
+      'My Books': '/mybooks',
+	  Logout: '/logout'
+};
 
 const AppHeader = ()=> {
   const navigate = useNavigate();
+  const [showInternalUserPages, setShowInternalUserPages] = useState(true);
   const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
   const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
 
   const handleMenuItemClick = (page: string) => {
-	  handleCloseNavMenu();
-	  const route = pageRoutes[page];
-	  if (route) {
-		navigate(route);
-	  }
-  };
-	
-  const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorElNav(event.currentTarget);
-  };
-  const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorElUser(event.currentTarget);
+    handleCloseNavMenu();
+    const route = pageRoutes[page];
+    if (route) {
+      navigate(route);
+    }
   };
 
-  const handleCloseNavMenu = () => {
-    setAnchorElNav(null);
+  const handleUserMenuClick = (setting: string) => {
+    handleCloseUserMenu();
+    const route = userRoutes[setting];
+    if (route) {
+      if (setting === 'Logout') {
+		Cookies.remove('JSESSIONID', { path: '/' });
+		Cookies.remove('JWT', { path: '/', domain: 'localhost', secure: true });
+		localStorage.removeItem('jwt');
+        navigate('/');
+      } else {
+        navigate(route);
+      }
+    }
   };
 
   const handleCloseUserMenu = () => {
     setAnchorElUser(null);
   };
 
+  const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorElUser(event.currentTarget);
+  };
+
+  const handleOpenNavMenu = async(event: React.MouseEvent<HTMLElement>) => {
+    setAnchorElNav(event.currentTarget);
+	updateNavOptionsGetLoggedInUser();
+  };
+
+  const handleCloseNavMenu = async() => {
+    setAnchorElNav(null);
+	updateNavOptionsGetLoggedInUser();
+  };
+  
+  const updateNavOptionsGetLoggedInUser = useCallback(async () => {
+    if (!localStorage.getItem('jwt')) {setShowInternalUserPages(false); return; }
+    const response = await fetch('http://localhost:8080/loggedinuser', {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('jwt')}`,
+      },
+    });
+
+    if (response.ok) {
+      const jsonResponse: ApiResponse = await response.json();
+      const u: User = jsonResponse.data;
+      if (u && u.role === Role.STAFF) { setShowInternalUserPages(true); } 
+	  else { setShowInternalUserPages(false); }
+    }
+  }, []);
+  
+  const visiblePages = pages.filter((page) => {
+    if (page === 'Internal User Management' || page === 'Internal Book Management') {
+      return showInternalUserPages;
+    }
+    return true; 
+  });
+  
+  useEffect(() => {
+    updateNavOptionsGetLoggedInUser();
+  }, [updateNavOptionsGetLoggedInUser]);
+  
   return (
     <AppBar position="static">
       <Container maxWidth="xl">
@@ -100,7 +176,7 @@ const AppHeader = ()=> {
               onClose={handleCloseNavMenu}
               sx={{ display: { xs: 'block', md: 'none' } }}
             >
-			{pages.map((page) => (
+			{visiblePages.map((page) => (
 			  <MenuItem key={page} onClick={() => handleMenuItemClick(page)}>
 				<Typography textAlign="center">{page}</Typography>
 			  </MenuItem>
@@ -108,26 +184,28 @@ const AppHeader = ()=> {
             </Menu>
           </Box>
           <AdbIcon sx={{ display: { xs: 'flex', md: 'none' }, mr: 1 }} />
-          <Typography
-            variant="h5"
-            noWrap
-            component="a"
-            href="#app-bar-with-responsive-menu"
-            sx={{
-              mr: 2,
-              display: { xs: 'flex', md: 'none' },
-              flexGrow: 1,
-              fontFamily: 'monospace',
-              fontWeight: 700,
-              letterSpacing: '.3rem',
-              color: 'inherit',
-              textDecoration: 'none',
-            }}
-          >
-            LIBRARY
-          </Typography>
+		  
+			<Typography
+			  variant="h5"
+			  noWrap
+			  component="div"
+			  onClick={() => navigate('/')}
+			  sx={{
+				mr: 2,
+				display: { xs: 'flex', md: 'none' },
+				flexGrow: 1,
+				fontFamily: 'monospace',
+				fontWeight: 700,
+				letterSpacing: '.3rem',
+				color: 'inherit',
+				textDecoration: 'none',
+				cursor: 'pointer'
+			  }}
+			>LIBRARY
+			</Typography>
+			
 			<Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
-			  {pages.map((page) => (
+			  {visiblePages.map((page) => (
 				<Button
 				  key={page}
 				  onClick={() => {
@@ -141,10 +219,10 @@ const AppHeader = ()=> {
 				</Button>
 			  ))}
 			</Box>
-          <Box sx={{ flexGrow: 0 }}>
+           <Box sx={{ flexGrow: 0 }}>
             <Tooltip title="Open settings">
               <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                <Avatar alt="" />
+                <Avatar alt="User Avatar" />
               </IconButton>
             </Tooltip>
             <Menu
@@ -164,7 +242,7 @@ const AppHeader = ()=> {
               onClose={handleCloseUserMenu}
             >
               {settings.map((setting) => (
-                <MenuItem key={setting} onClick={handleCloseUserMenu}>
+                <MenuItem key={setting} onClick={() => handleUserMenuClick(setting)}>
                   <Typography sx={{ textAlign: 'center' }}>{setting}</Typography>
                 </MenuItem>
               ))}

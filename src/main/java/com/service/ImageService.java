@@ -38,7 +38,7 @@ public class ImageService {
 				image.setImage(new SerialBlob(file.getBytes()));
 				image.setBook(b);
 				Image savedImage = imageRepo.save(image);
-				savedImage.setDownloadurl("/images/"+savedImage.getId());
+				savedImage.setDownloadurl("http://localhost:8080/images/"+savedImage.getId());
 				imageRepo.save(savedImage);
 				
 			}catch(IOException | SQLException e) {

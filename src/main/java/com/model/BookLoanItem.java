@@ -2,7 +2,7 @@ package com.model;
 
 import java.math.BigDecimal;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -24,7 +24,7 @@ public class BookLoanItem {
 	
 	@ManyToOne
 	@JoinColumn(name = "bookloan_id")
-	@JsonIgnore
+	@JsonBackReference
 	private BookLoan bookloan;
 	
 	@ManyToOne

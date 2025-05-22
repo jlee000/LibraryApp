@@ -18,23 +18,30 @@ public class CartController {
     @Autowired
     private CartService cartService;
 
-    @GetMapping("cart/{cartId}")
+    @GetMapping("cart/id/{cartId}")
 	public ResponseEntity<ApiResponse> getCartById(@PathVariable Long cartId){
 		Cart cart = cartService.getCartByCartId(cartId);
 		if(cart ==null) {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse("Failed",cartId));	
 		}
-		cart.setCartItems(cartService.removeCartItemImages(cart.getCartItems()));
 		return ResponseEntity.ok(new ApiResponse("Success",cart));
 	}	
 
-	@GetMapping("cart/user/{userId}")
+	@GetMapping("cart/userid/{userId}")
 	public ResponseEntity<ApiResponse> getCartByUserId(@PathVariable Long userId){
 		Cart cart = cartService.getCartByUserId(userId);
 		if(cart ==null) {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse("Failed",userId));	
 		}
-		cart.setCartItems(cartService.removeCartItemImages(cart.getCartItems()));
+		return ResponseEntity.ok(new ApiResponse("Success",cart));
+	}	
+
+	@GetMapping("cart/username/{username}")
+	public ResponseEntity<ApiResponse> getCartByUsername(@PathVariable String username){
+		Cart cart = cartService.getCartByUsername(username);
+		if(cart ==null) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse("Failed",username));	
+		}
 		return ResponseEntity.ok(new ApiResponse("Success",cart));
 	}	
 	

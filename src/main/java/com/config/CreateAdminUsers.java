@@ -35,7 +35,7 @@ public class CreateAdminUsers implements ApplicationListener<ApplicationReadyEve
 			u.setEmail(defaultEmail);
 			u.setPassword("pass");
 			u.setRole(Role.STAFF);
-			u.setEnabled(true);
+			u.setActive(true);
 			usersService.addUser(u);
 			System.out.println("Default admin user created: " + u.getEmail());
 		}

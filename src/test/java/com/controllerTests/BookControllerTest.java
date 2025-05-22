@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -17,7 +18,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import java.util.Optional;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import com.configSecurity.JWTService;
 import com.controller.BookController;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.model.Author;
@@ -26,6 +28,8 @@ import com.repository.BookRepo;
 import com.service.BookService;
 
 @WebMvcTest(BookController.class)
+@WithMockUser(username = "admin1", roles = "USER")
+@MockBean(JWTService.class)
 public class BookControllerTest {
         
     @Autowired
@@ -57,6 +61,7 @@ public class BookControllerTest {
 
         final ObjectMapper objectMapper = new ObjectMapper();
         mockMvc.perform(post("/book")
+            .with(csrf())
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(inputBook)))
             .andDo(print())

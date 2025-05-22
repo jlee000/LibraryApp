@@ -62,7 +62,6 @@ public class BookLoanService {
 
 			BookLoanItem newLoanItem = new BookLoanItem(cartItem.getQuantity(), bl, b);
 			newLoanItem.setLoanItemValue();	
-			newLoanItem.getBook().getImages().forEach(image->image.setImage(null));
 			bookLoanItems.add(newLoanItem);	}
 		);
 		bl.setBookLoanItems(bookLoanItems);

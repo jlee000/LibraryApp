@@ -115,10 +115,7 @@ public class BookService {
 	
 	public boolean checkStock(Book p, int request) {
         int newBookStock = p.getStock()-request;
-		if(newBookStock >= 0 ){
-			return true;
-		}		
-		return false;
+		return (newBookStock >= 0);
 	}
 	
 	private boolean bookExixts(String title, String author) {

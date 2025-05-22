@@ -10,12 +10,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.web.server.csrf.CsrfToken;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 
 import com.config.Role;
+import com.configSecurity.JWTService;
 import com.controller.UserController;
 import com.exception.ResourceNotFoundException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -28,6 +33,8 @@ import com.service.CartService;
 import com.service.UserService;
 
 @WebMvcTest(UserController.class)
+@WithMockUser(username = "admin1", roles = "ADMIN")
+@MockBean(JWTService.class)
 public class UserControllerTest {
     
     @Autowired
@@ -59,7 +66,7 @@ public class UserControllerTest {
 
     @Test
     void testAddUser() throws Exception {
-        Users user = new Users("Username","pass","First","Last","email@email.com", Role.MEMBER, true, null, null);
+        Users user = new Users("Username","pass","First","Last","email@email.com", Role.STAFF, true, null, null);
         when(userService.addUser(any(Users.class))).thenReturn(user);
         when(cartService.getCartByUserId(1L)).thenReturn(new Cart(1L, user,null));
         
@@ -67,6 +74,7 @@ public class UserControllerTest {
             .registerModule(new JavaTimeModule())
             .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         mockMvc.perform(post("/user")
+            .with(csrf())
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(user)))
             .andDo(print())

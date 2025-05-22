@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.config.LoanStatus;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -43,6 +44,7 @@ public class BookLoan {
 	private Users user;
 
 	@OneToMany(mappedBy="bookloan", cascade=CascadeType.ALL, orphanRemoval=true)
+    @JsonManagedReference  
 	private List<BookLoanItem> bookLoanItems;
 
     

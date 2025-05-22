@@ -12,7 +12,6 @@ public class UsersTest {
         Users user = new Users("Username","pass","First","Last","email@email.com", Role.MEMBER, true, null, null);
 
         assertEquals("Username", user.getUsername());
-        assertEquals("pass", user.getPassword());
         assertEquals("First", user.getFirstname());
         assertEquals("Last", user.getLastname());
         assertEquals("email@email.com", user.getEmail());

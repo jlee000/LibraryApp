@@ -1,4 +1,7 @@
 package com.service;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -84,8 +87,16 @@ public class CartItemService {
 		return cart.getCartItems()
 		.stream()
 		.filter(item -> item.getBook().getId().equals(bookId))
-		.findFirst().orElseThrow(()-> new ResourceNotFoundException("BookId not found") );
-		
+		.findFirst().orElseThrow(()-> new ResourceNotFoundException("BookId not found") );		
 	}
-    
+
+	public List<Book> getBooksOfCartItems(Long cartId) {
+		List<Book> books = new ArrayList<>();
+		Cart cart = cartService.getCartByCartId(cartId);
+		for(Cartitem cartitem : cart.getCartItems()){
+			Book book = bookService.getBookById(cartitem.getBook().getId());
+			books.add(book);
+		}	
+		return books;
+	}    
 }

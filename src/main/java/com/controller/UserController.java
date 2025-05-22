@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.config.ApiResponse;
 import com.exception.ResourceNotFoundException;
 import com.model.Users;
-import com.service.CartService;
 import com.service.UserService;
 
 import jakarta.validation.Valid;
@@ -26,21 +25,12 @@ public class UserController {
 	
 	@Autowired
 	UserService userService;
-
-	@Autowired
-    private CartService cartService;
 	
 	
 	@GetMapping("user")
 	public ResponseEntity<ApiResponse> getUsers() {
 		try{
 			List<Users> users = userService.getUsers();
-			for(Users u: users){
-				if(u.getCart() != null && u.getCart().getCartItems() != null){
-				u.getCart().setCartItems(cartService.removeCartItemImages(
-					cartService.getCartByUserId(u.getId()).getCartItems()));
-				}
-			}
 			return ResponseEntity.ok(new ApiResponse("Get user success",users));
 		}catch(ResourceNotFoundException e){
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse("Get user failed",e.getMessage()));
@@ -50,25 +40,17 @@ public class UserController {
 	@GetMapping("user/id/{userId}")
 	public ResponseEntity<ApiResponse> getUserById(@PathVariable Long userId) {
 		try {
-		Users u = userService.getUserById((long) userId);		
-		if(u.getCart() != null && u.getCart().getCartItems() != null){
-			u.getCart().setCartItems(cartService.removeCartItemImages(
-			cartService.getCartByUserId(u.getId()).getCartItems()		));
-		}
-		return ResponseEntity.ok(new ApiResponse("Get users success",u));
+			Users u = userService.getUserById((long) userId);
+			return ResponseEntity.ok(new ApiResponse("Get users success",u));
 		}catch(ResourceNotFoundException e) {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse("Get user failed",e.getMessage()));
 		}
 	}
 	
 	@GetMapping("user/email")
-	public ResponseEntity<ApiResponse> getUserByEmail(@RequestBody String email) {
+	public ResponseEntity<ApiResponse> getUserByEmail(@PathVariable String email) {
 		try {
-		Users u = userService.getUserByEmail(email);		
-		if(u.getCart() != null && u.getCart().getCartItems() != null){
-			u.getCart().setCartItems(cartService.removeCartItemImages(
-			cartService.getCartByUserId(u.getId()).getCartItems()		));
-		}
+		Users u = userService.getUserByEmail(email);	
 		return ResponseEntity.ok(new ApiResponse("Get user success",u));
 		}catch(ResourceNotFoundException e) {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse("Get user failed",e.getMessage()));
@@ -76,13 +58,9 @@ public class UserController {
 	}
 
 	@GetMapping("user/username")
-	public ResponseEntity<ApiResponse> getUserByUsername(@RequestBody String username) {
+	public ResponseEntity<ApiResponse> getUserByUsername(@PathVariable String username) {
 		try {
 		Users u = userService.getUserByUsername(username);
-		if(u.getCart() != null && u.getCart().getCartItems() != null){
-			u.getCart().setCartItems(cartService.removeCartItemImages(
-					cartService.getCartByUserId(u.getId()).getCartItems()		));
-		}
 		return ResponseEntity.ok(new ApiResponse("Get user success",u));
 		}catch(ResourceNotFoundException e) {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse("Get user failed",e.getMessage()));

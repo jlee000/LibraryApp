@@ -2,7 +2,10 @@ package com.model;
 import java.time.LocalDate;
 import java.util.List;
 
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
 import com.config.Role;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -14,6 +17,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.Transient;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
@@ -47,13 +51,17 @@ public class Users {
 
 	@Enumerated(EnumType.STRING)
 	private Role Role;
-	private boolean enabled;
+	private boolean active;
 
 	@OneToOne(mappedBy = "user",  cascade=CascadeType.ALL, orphanRemoval=true)
 	private Cart cart;
 
 	@OneToMany(mappedBy = "user",  cascade=CascadeType.ALL, orphanRemoval=true)
 	private List<BookLoan> bookLoans;
+
+	@Transient
+	@JsonIgnore
+	private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
 	
 	public Users() {
 		super();
@@ -62,11 +70,11 @@ public class Users {
 	public Users(String username, String password, String firstname, String lastname, String email, com.config.Role role, boolean enabled, Cart cart, List<BookLoan> bookLoans) {
 		this.username = username;
 		this.email = email;
-		this.password = password;
+		this.password = encoder.encode(password);
 		this.firstname = firstname;
 		this.lastname = lastname;
 		Role = role;
-		this.enabled = enabled;
+		this.active = enabled;
 		this.cart = cart;
 		this.bookLoans=bookLoans;
 	}
@@ -74,11 +82,11 @@ public class Users {
 	public Users(String username, String password, String firstname, String lastname, String email, com.config.Role role, boolean enabled) {
 		this.username = username;
 		this.email = email;
-		this.password = password;
+		this.password = encoder.encode(password);
 		this.firstname = firstname;
 		this.lastname = lastname;
 		Role = role;
-		this.enabled = enabled;
+		this.active = enabled;
 	}
 
 	public Cart getCart() {
@@ -99,17 +107,17 @@ public class Users {
 	public void setUsername(String username) {
 		this.username = username;
 	}
-	public boolean isEnabled() {
-		return enabled;
+	public boolean isActive() {
+		return active;
 	}
-	public void setEnabled(boolean enabled) {
-		this.enabled = enabled;
+	public void setActive(boolean active) {
+		this.active = active;
 	}
 	public String getPassword() {
 		return password;
 	}
 	public void setPassword(String password) {
-		this.password = password;
+		this.password = encoder.encode(password);
 	}
 	public Long getId() {
 		return id;
@@ -158,6 +166,6 @@ public class Users {
 	public String toString() {
 		return "Users [id=" + id + ", username=" + username + ", password=" + password + ", firstname=" + firstname
 				+ ", lastname=" + lastname + ", email=" + email + ", createdOn=" + createdOn + ", updatedOn="
-				+ updatedOn + ", Role=" + Role + ", enabled=" + enabled + ", cart=" + cart + ", loan=" + bookLoans + "]";
+				+ updatedOn + ", Role=" + Role + ", enabled=" + active + ", cart=" + cart + ", loan=" + bookLoans + "]";
 	}
 }
