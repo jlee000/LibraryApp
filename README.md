@@ -45,12 +45,12 @@ A full-stack **Library Management System** designed to demonstrate backend Java 
 ### ⚙️ Setup & Run
 
 # Backend
-./mvnw spring-boot:run
+- ./mvnw spring-boot:run
 
 # Frontend
-cd frontend
-npm install
-npm run dev
+- cd frontend
+- npm install
+- npm run dev
 
 ---
 
