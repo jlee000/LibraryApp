@@ -23,7 +23,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class SecurityConfig {
 	
 	@Autowired
-	private UserDetailsService userDetailService;
+	private UserDetailsServiceCustom userDetailServiceCustom;
 	
 	@Autowired
 	private JWTFilter jwtFilter;
@@ -65,7 +65,7 @@ public class SecurityConfig {
 	public AuthenticationProvider authenticationProvider () {
 		DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
 		provider.setPasswordEncoder(new BCryptPasswordEncoder(12));
-		provider.setUserDetailsService(userDetailService);
+		provider.setUserDetailsService(userDetailServiceCustom);
 		return provider;
 	}
 	

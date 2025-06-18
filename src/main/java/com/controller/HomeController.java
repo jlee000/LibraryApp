@@ -28,9 +28,14 @@ public class HomeController {
     @GetMapping("/loggedinuser")
     public ResponseEntity<ApiResponse> getCurrentUser(Authentication authentication) {
         try{
-            UserDetailsCustom userDetails = (UserDetailsCustom)authentication.getPrincipal();
-            Users user = userService.getUserByUsername(userDetails.getUsername());
-            return ResponseEntity.ok(new ApiResponse("Success",user));
+			Object principal = authentication.getPrincipal();
+			if (principal instanceof UserDetailsCustom) {
+				UserDetailsCustom userDetails = (UserDetailsCustom)authentication.getPrincipal();
+				Users user = userService.getUserByUsername(userDetails.getUsername());
+				return ResponseEntity.ok(new ApiResponse("Success",user));
+			}else{
+				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse("User not logged in", "Invalid user details"));
+			}	
         }catch(Exception e){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse("User not logged in", e.getMessage()));
         }
